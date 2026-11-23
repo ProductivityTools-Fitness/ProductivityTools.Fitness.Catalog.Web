@@ -1,0 +1,148 @@
+<div class="catalog-list-container">
+  <div class="header-row">
+    <div>
+      <h2>Katalog ćwiczeń</h2>
+      <p class="subtitle">
+        Przeglądaj, filtruj i edytuj ćwiczenia w źródłowym katalogu <code>Fitness.Catalog.Api</code>.
+      </p>
+    </div>
+    <a routerLink="/exercises/new" class="btn btn-primary">+ Dodaj ćwiczenie</a>
+  </div>
+
+  <form class="filters-bar" (ngSubmit)="search()">
+    <div class="filter-group filter-search">
+      <label for="search-name" class="filter-label">Nazwa ćwiczenia</label>
+      <input
+        id="search-name"
+        name="searchName"
+        type="text"
+        class="filter-input"
+        placeholder="np. bench press, deadlift, curl..."
+        [ngModel]="searchName()"
+        (ngModelChange)="searchName.set($event)"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label for="filter-equipment" class="filter-label">Sprzęt (Equipment)</label>
+      <select
+        id="filter-equipment"
+        name="selectedEquipment"
+        class="filter-select"
+        [ngModel]="selectedEquipment()"
+        (ngModelChange)="selectedEquipment.set($event); search()"
+      >
+        <option value="">Cały sprzęt</option>
+        @for (eq of equipmentOptions; track eq) {
+          <option [value]="eq">{{ eq }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="filter-body" class="filter-label">Partia ciała</label>
+      <select
+        id="filter-body"
+        name="selectedBodyPart"
+        class="filter-select"
+        [ngModel]="selectedBodyPart()"
+        (ngModelChange)="selectedBodyPart.set($event); search()"
+      >
+        <option value="">Wszystkie partie</option>
+        @for (bp of bodyPartOptions; track bp) {
+          <option [value]="bp">{{ bp }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group filter-limit">
+      <label for="filter-limit" class="filter-label">Limit</label>
+      <select
+        id="filter-limit"
+        name="limit"
+        class="filter-select"
+        [ngModel]="limit()"
+        (ngModelChange)="limit.set(+$event); search()"
+      >
+        @for (opt of limitOptions; track opt) {
+          <option [value]="opt">{{ opt }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-actions">
+      <button type="submit" class="btn btn-search" [disabled]="isLoading()">
+        {{ isLoading() ? 'Szukam...' : '🔍 Szukaj' }}
+      </button>
+      @if (hasActiveFilters()) {
+        <button type="button" class="btn btn-clear" (click)="clearFilters()">
+          ✕ Wyczyść
+        </button>
+      }
+    </div>
+  </form>
+
+  @if (isLoading()) {
+    <div class="state-box">
+      <p>Ładowanie katalogu ćwiczeń...</p>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="error-box">
+      <p>{{ errorMessage() }}</p>
+      <button type="button" class="btn btn-retry" (click)="search()">Spróbuj ponownie</button>
+    </div>
+  } @else if (exercises().length > 0) {
+    <div class="results-meta">
+      Wyświetlono <strong>{{ exercises().length }}</strong> ćwiczeń
+    </div>
+
+    <div class="exercises-grid">
+      @for (ex of exercises(); track ex.exerciseId) {
+        <div class="exercise-card">
+          <a [routerLink]="['/exercises', ex.exerciseId]" class="card-media" [title]="'Edytuj: ' + ex.name">
+            <app-catalog-image
+              [exerciseId]="ex.exerciseId"
+              [alt]="ex.name"
+              [hasImage]="ex.hasImage"
+            />
+          </a>
+
+          <div class="card-content">
+            <div class="exercise-id-row">
+              <code class="exercise-id">{{ ex.exerciseId }}</code>
+            </div>
+
+            <h3 class="exercise-name">
+              <a [routerLink]="['/exercises', ex.exerciseId]">{{ ex.name }}</a>
+            </h3>
+
+            <div class="badges-row">
+              @if (ex.primaryBodyPart) {
+                <span class="badge badge-body">{{ ex.primaryBodyPart }}</span>
+              }
+              @if (ex.primaryMuscle) {
+                <span class="badge badge-muscle">{{ ex.primaryMuscle }}</span>
+              }
+              @if (ex.primaryEquipment) {
+                <span class="badge badge-equipment">{{ ex.primaryEquipment }}</span>
+              }
+            </div>
+
+            <div class="card-actions">
+              <a [routerLink]="['/exercises', ex.exerciseId]" class="btn btn-edit">
+                ✏️ Edytuj →
+              </a>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="state-box">
+      <p>Brak ćwiczeń spełniających wybrane kryteria.</p>
+      @if (hasActiveFilters()) {
+        <button type="button" class="btn btn-clear" (click)="clearFilters()">Wyczyść filtry</button>
+      }
+    </div>
+  }
+</div>

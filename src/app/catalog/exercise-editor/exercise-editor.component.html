@@ -1,0 +1,216 @@
+<div class="editor-container">
+  <div class="header-nav">
+    <a routerLink="/exercises" class="back-link">← Wróć do katalogu ćwiczeń</a>
+  </div>
+
+  @if (isLoading()) {
+    <div class="state-box">Ładowanie ćwiczenia...</div>
+  } @else if (errorMessage()) {
+    <div class="error-box">
+      <p>{{ errorMessage() }}</p>
+      <a routerLink="/exercises" class="btn btn-secondary">Wróć do listy</a>
+    </div>
+  } @else {
+    <div class="editor-card">
+      <div class="editor-header">
+        <div>
+          <h2>{{ isCreateMode() ? 'Nowe ćwiczenie w katalogu' : name || exerciseId }}</h2>
+          @if (!isCreateMode()) {
+            <code class="exercise-id-badge">{{ exerciseId }}</code>
+          }
+        </div>
+      </div>
+
+      <div class="editor-layout">
+        <div class="media-column">
+          <div class="media-box">
+            @if (!isCreateMode()) {
+              <app-catalog-image
+                [exerciseId]="exerciseId"
+                [alt]="name"
+                [hasImage]="hasImage()"
+                [refreshKey]="imageRefreshKey()"
+              />
+            } @else {
+              <div class="media-hint">
+                <span>🏋️</span>
+                <p>Animację GIF wgrasz po utworzeniu ćwiczenia.</p>
+              </div>
+            }
+          </div>
+
+          @if (!isCreateMode()) {
+            <div class="upload-section">
+              <label class="btn btn-secondary btn-upload" [class.disabled]="isUploadingImage()">
+                {{ isUploadingImage() ? 'Wgrywanie...' : (hasImage() ? '🖼️ Podmień animację GIF' : '🖼️ Wgraj animację GIF') }}
+                <input
+                  type="file"
+                  accept="image/gif,image/webp,image/png,image/jpeg"
+                  [disabled]="isUploadingImage()"
+                  (change)="onImageSelected($event)"
+                  hidden
+                />
+              </label>
+              @if (imageFileName()) {
+                <span class="file-name">{{ imageFileName() }}</span>
+              }
+            </div>
+          }
+        </div>
+
+        <form class="form-column" (ngSubmit)="save()">
+          @if (isCreateMode()) {
+            <div class="form-group">
+              <label for="exerciseId">Exercise ID *</label>
+              <div class="id-input-row">
+                <input
+                  id="exerciseId"
+                  name="exerciseId"
+                  type="text"
+                  required
+                  placeholder="np. fp_barbell_curl"
+                  [(ngModel)]="exerciseId"
+                />
+                <button type="button" class="btn btn-secondary" (click)="suggestExerciseId()">
+                  Generuj z nazwy
+                </button>
+              </div>
+            </div>
+          }
+
+          <div class="form-group">
+            <label for="name">Nazwa ćwiczenia *</label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              required
+              placeholder="np. bench press"
+              [ngModel]="name"
+              (ngModelChange)="onNameChange($event)"
+            />
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="primaryEquipment">Sprzęt główny (Equipment)</label>
+              <input
+                id="primaryEquipment"
+                name="primaryEquipment"
+                type="text"
+                list="equipment-datalist"
+                placeholder="np. barbell, dumbbell, cable..."
+                [(ngModel)]="primaryEquipment"
+              />
+              <datalist id="equipment-datalist">
+                @for (eq of equipmentOptions; track eq) {
+                  <option [value]="eq"></option>
+                }
+              </datalist>
+            </div>
+
+            <div class="form-group">
+              <label for="extraEquipments">Dodatkowy sprzęt (po przecinku)</label>
+              <input
+                id="extraEquipments"
+                name="extraEquipmentsText"
+                type="text"
+                placeholder="opcjonalnie"
+                [(ngModel)]="extraEquipmentsText"
+              />
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="primaryBodyPart">Partia ciała (Body Part)</label>
+              <input
+                id="primaryBodyPart"
+                name="primaryBodyPart"
+                type="text"
+                list="bodypart-datalist"
+                placeholder="np. chest, back, upper legs..."
+                [(ngModel)]="primaryBodyPart"
+              />
+              <datalist id="bodypart-datalist">
+                @for (bp of bodyPartOptions; track bp) {
+                  <option [value]="bp"></option>
+                }
+              </datalist>
+            </div>
+
+            <div class="form-group">
+              <label for="extraBodyParts">Dodatkowe partie (po przecinku)</label>
+              <input
+                id="extraBodyParts"
+                name="extraBodyPartsText"
+                type="text"
+                placeholder="opcjonalnie"
+                [(ngModel)]="extraBodyPartsText"
+              />
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="primaryMuscle">Mięsień główny (Target Muscle)</label>
+              <input
+                id="primaryMuscle"
+                name="primaryMuscle"
+                type="text"
+                list="muscle-datalist"
+                placeholder="np. pectorals, lats, quads..."
+                [(ngModel)]="primaryMuscle"
+              />
+              <datalist id="muscle-datalist">
+                @for (m of muscleOptions; track m) {
+                  <option [value]="m"></option>
+                }
+              </datalist>
+            </div>
+
+            <div class="form-group">
+              <label for="extraTargetMuscles">Dodatkowe mięśnie główne (po przecinku)</label>
+              <input
+                id="extraTargetMuscles"
+                name="extraTargetMusclesText"
+                type="text"
+                placeholder="opcjonalnie"
+                [(ngModel)]="extraTargetMusclesText"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="secondaryMuscles">Mięśnie pomocnicze (po przecinku)</label>
+            <input
+              id="secondaryMuscles"
+              name="secondaryMusclesText"
+              type="text"
+              placeholder="np. triceps, delts, core"
+              [(ngModel)]="secondaryMusclesText"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="instructions">Instrukcja wykonania (każdy krok w osobnej linii)</label>
+            <textarea
+              id="instructions"
+              name="instructionsText"
+              rows="6"
+              placeholder="Krok 1...&#10;Krok 2..."
+              [(ngModel)]="instructionsText"
+            ></textarea>
+          </div>
+
+          <div class="form-actions">
+            <a routerLink="/exercises" class="btn btn-secondary">Anuluj</a>
+            <button type="submit" class="btn btn-primary" [disabled]="isSaving()">
+              {{ isSaving() ? 'Zapisywanie...' : (isCreateMode() ? 'Utwórz ćwiczenie' : '💾 Zapisz zmiany') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>
