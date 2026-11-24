@@ -8,6 +8,7 @@ import {
   CANONICAL_MUSCLES,
   CatalogExercise,
   SaveCatalogExerciseRequest,
+  formatMuscleLabel,
 } from '../models/catalog-exercise';
 import { CatalogImageComponent } from '../catalog-image/catalog-image.component';
 import { NotificationService } from '../../notification/notification.service';
@@ -29,6 +30,7 @@ export class ExerciseEditorComponent implements OnInit {
   readonly equipmentOptions = CANONICAL_EQUIPMENTS;
   readonly bodyPartOptions = CANONICAL_BODY_PARTS;
   readonly muscleOptions = CANONICAL_MUSCLES;
+  readonly formatMuscle = formatMuscleLabel;
 
   isCreateMode = signal<boolean>(false);
   isLoading = signal<boolean>(false);

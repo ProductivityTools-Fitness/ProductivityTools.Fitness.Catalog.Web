@@ -164,7 +164,7 @@
               />
               <datalist id="muscle-datalist">
                 @for (m of muscleOptions; track m) {
-                  <option [value]="m"></option>
+                  <option [value]="m">{{ formatMuscle(m) }}</option>
                 }
               </datalist>
             </div>
